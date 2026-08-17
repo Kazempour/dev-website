@@ -18,7 +18,7 @@ enableRobotsTXT = true
 
 [languages]
   [languages.en]
-    title = "Vahid"
+    title = "VAHID.DEV"
     languageName = "en-US"
     LanguageCode = "en-US"
     contentDir = "content"
@@ -28,7 +28,7 @@ enableRobotsTXT = true
 [params]
   description = "Personal website of Vahid — Cloud Engineer. Thoughts on technology, projects, and the occasional poem."
   favicon = "favicon.svg"
-  title = "Vahid"
+  title = "VAHID.DEV"
   dateFormat = "2006-01-02"
   hideUntranslated = false
   themeStyle = "original"
