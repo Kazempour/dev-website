@@ -2,9 +2,8 @@
 title: "About"
 ---
 
-I'm **Vahid Kazempour** — a senior backend engineer and AWS-certified solutions architect with
-18+ years of experience building distributed systems. I'm based in Vancouver, BC, and currently
-work at **Axon** on cloud-native backend services.
+I'm **Vahid** — a senior software engineer and AWS-certified solutions architect with
+18+ years of experience building distributed systems.
 
 ## What I do
 
@@ -22,7 +21,7 @@ home network.
 ## Outside of work
 
 I read fantasy and mystery novels, dig into modern history and philosophy, and write the
-occasional poem. The engineering habit follows me home: my weekend tinkering tends to be
+occasional blog posts. The engineering habit follows me home: my weekend tinkering tends to be
 network security and self-hosted infrastructure (see the
 [IoT network post](/posts/one-way-trusted-iot-network/)).
 

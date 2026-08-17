@@ -2,9 +2,8 @@
 title: "Welcome"
 ---
 
-I'm **Vahid Kazempour** — a senior backend engineer and AWS-certified solutions architect with
-18+ years building distributed systems. I live in Vancouver, BC, and I work at **Axon**, where
-I help design and ship resilient, cloud-native services at scale.
+I'm **Vahid** — a senior backend engineer and AWS-certified solutions architect with
+18+ years building distributed systems. 
 
 This site is where I keep a few things: a short note about me, and the occasional write-up on the
 projects and problems I dig into — cloud cost engineering, Kubernetes, and the home-network
@@ -12,7 +11,7 @@ security experiments I tinker with on weekends.
 
 ## About me
 
-- **Role:** Senior backend engineer / Solutions architect (AWS-certified).
+- **Role:** Senior software engineer / Solutions architect (AWS-certified).
 - **Focus:** Distributed systems, cloud infrastructure, security, and performance.
 - **Experience:** 18+ years across backend platforms and large-scale systems.
 - **Location:** Vancouver, BC.

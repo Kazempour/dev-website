@@ -1,6 +1,6 @@
-# Vahid.dev — Personal Website
+# VAHID.DEV — Personal Website
 
-Static personal site for **Vahid Kazempour**, built with [Hugo](https://gohugo.io/) and the
+Static personal site for **Vahid**, built with [Hugo](https://gohugo.io/) and the
 [hugo-bearcub](https://github.com/clente/hugo-bearcub) theme (a port of [Bear Blog](https://bearblog.dev/)).
 
 > No JavaScript, no tracking, tiny pages. Just Markdown.
