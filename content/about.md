@@ -2,8 +2,9 @@
 title: "About"
 ---
 
-**Vahid** is a senior backend engineer and AWS-certified solutions architect with
-18+ years of experience building distributed systems. 
+**Vahid Kazempour** is a senior backend engineer and AWS-certified solutions architect with
+18+ years of experience building distributed systems. He's based in Vancouver, BC, and currently
+works at **Axon** on cloud-native backend services.
 
 ## What I do
 
