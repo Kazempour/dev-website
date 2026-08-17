@@ -1,7 +1,7 @@
 # Basic config
 baseURL = "https://vahid.dev"
 theme = "hugo-bearcub"
-copyright = "Vahid (CC BY 4.0)"
+copyright = "© 2024"
 defaultContentLanguage = "en"
 
 enableRobotsTXT = true
@@ -19,7 +19,7 @@ enableRobotsTXT = true
     LanguageCode = "en-US"
     contentDir = "content"
     [languages.en.params]
-      madeWith = "Made with [Bear Cub](https://github.com/clente/hugo-bearcub)"
+      madeWith = "[VHAID.DEV](https://vahid.dev)"
 
 [params]
   description = "Personal website of Vahid — Cloud Engineer. Thoughts on technology, projects, and the occasional poem."
