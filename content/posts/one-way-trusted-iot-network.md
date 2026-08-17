@@ -70,41 +70,43 @@ turned the OpenWrt IoT box into a **Tailscale subnet router** for `172.16.1.0/24
 
 ## The architecture that worked
 
-```mermaid
-flowchart TB
-  INTERNET(("INTERNET"))
-  CALIX["ISP Router: Calix Gigaspire (EXOS)<br/>DHCP: trusted OFF · guest ON"]
-  INTERNET --- CALIX
-  TRUSTED["TRUSTED Wi-Fi · 10.10.1.0/24<br/>Trusted devices + Tailscale client"]
-  GUEST["GUEST Wi-Fi · 192.168.0.0/24 (isolated)<br/>OpenWrt WAN side"]
-  CALIX --- TRUSTED
-  CALIX --- GUEST
-  TUNNEL["Tailscale tunnel → 172.16.1.0/24"]
-  TRUSTED --- TUNNEL
-  OPENWRT["OpenWrt — IoT GW/AP + Tailscale subnet router<br/>WAN 192.168.0.x · LAN 172.16.1.1<br/>advertises 172.16.1.0/24"]
-  TUNNEL --- OPENWRT
-  IOT["IoT devices · 172.16.1.0/24"]
-  OPENWRT --- IOT
-
-  style INTERNET fill:#2b2b2b,stroke:#888,color:#eee
-  style CALIX fill:#2b2b2b,stroke:#555,color:#eee
-  style TRUSTED fill:#2b2b2b,stroke:#555,color:#eee
-  style GUEST fill:#262626,stroke:#777,stroke-dasharray:4 3,color:#ccc
-  style TUNNEL fill:#22303a,stroke:#4a7,color:#cde
-  style OPENWRT fill:#1f2b22,stroke:#6a8,color:#eee
-  style IOT fill:#2b2b2b,stroke:#555,color:#eee
 ```
-
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: false, theme: 'dark' });
-  document.addEventListener('DOMContentLoaded', () => {
-    mermaid.run({ querySelector: '.language-mermaid' });
-  });
-</script>
-
-> The diagram is rendered with [Mermaid](https://mermaid.js.org/) and scales to fit any screen
-> (it's an SVG, so no horizontal overflow on mobile).
+                              INTERNET
+                                 │
+                    ┌────────────┴─────────────┐
+                    │   ISP Router: Calix      │
+                    │   Gigaspire (EXOS)       │
+                    │  (DHCP: trusted OFF,     │
+                    │   guest ON)              │
+                    └──────────────────────────┘
+                       │                │
+         TRUSTED Wi-Fi │                │ GUEST Wi-Fi (isolated)
+         10.10.1.0/24  │                │ 192.168.0.0/24
+                       │                │
+          ┌────────────┴───┐            │
+          │ Trusted devices│            │
+          │ (laptop/phone) │            │
+          │ + Tailscale    │            │
+          │   client       │            │
+          └────────────────┘            │
+                  │ (Tailscale tunnel)  │
+                  │  to 172.16.1.0/24   │
+                  ▼                     │
+          ┌─────────────────────────────┴──────────┐
+          │ OpenWrt (IoT GW/AP + Tailscale subnet   │
+          │          router)                        │
+          │  WAN  = 192.168.0.x  (guest side)       │
+          │  LAN  = 172.16.1.1 (IoT Wi-Fi)          │
+          │  Tailscale advertises 172.16.1.0/24     │
+          └─────────────────────────────────────────┘
+                       │
+                 IOT Wi-Fi SSID
+                       │
+              ┌────────┴─────────┐
+              │ IoT devices      │
+              │ 172.16.1.0/24    │
+              └──────────────────┘
+```
 
 Trusted devices join my Tailscale tailnet and get a route to `172.16.1.0/24` through the
 OpenWrt subnet router. IoT devices stay behind OpenWrt, which is on the isolated guest LAN.
