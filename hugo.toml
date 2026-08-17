@@ -34,7 +34,7 @@ enableRobotsTXT = true
     name = "Vahid"
     email = "contact@vahid.dev"
 
-# Top navigation: Home / Blog  (Bear Cub renders the RSS link itself in nav.html)
+# Top navigation: Home / Blog / About  (Bear Cub appends the RSS link itself)
 [[menus.main]]
   name = "Home"
   url = "/"
@@ -43,3 +43,7 @@ enableRobotsTXT = true
   name = "Blog"
   url = "/posts/"
   weight = 2
+[[menus.main]]
+  name = "About"
+  url = "/about/"
+  weight = 3
