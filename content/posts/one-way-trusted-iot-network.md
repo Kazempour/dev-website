@@ -70,43 +70,60 @@ turned the OpenWrt IoT box into a **Tailscale subnet router** for `172.16.1.0/24
 
 ## The architecture that worked
 
-```
-                              INTERNET
-                                 │
-                    ┌────────────┴─────────────┐
-                    │   ISP Router: Calix      │
-                    │   Gigaspire (EXOS)       │
-                    │  (DHCP: trusted OFF,     │
-                    │   guest ON)              │
-                    └──────────────────────────┘
-                       │                │
-         TRUSTED Wi-Fi │                │ GUEST Wi-Fi (isolated)
-         10.10.1.0/24  │                │ 192.168.0.0/24
-                       │                │
-          ┌────────────┴───┐            │
-          │ Trusted devices│            │
-          │ (laptop/phone) │            │
-          │ + Tailscale    │            │
-          │   client       │            │
-          └────────────────┘            │
-                  │ (Tailscale tunnel)  │
-                  │  to 172.16.1.0/24   │
-                  ▼                     │
-          ┌─────────────────────────────┴──────────┐
-          │ OpenWrt (IoT GW/AP + Tailscale subnet   │
-          │          router)                        │
-          │  WAN  = 192.168.0.x  (guest side)       │
-          │  LAN  = 172.16.1.1 (IoT Wi-Fi)          │
-          │  Tailscale advertises 172.16.1.0/24     │
-          └─────────────────────────────────────────┘
-                       │
-                 IOT Wi-Fi SSID
-                       │
-              ┌────────┴─────────┐
-              │ IoT devices      │
-              │ 172.16.1.0/24    │
-              └──────────────────┘
-```
+<style>
+.net-diagram { max-width:100%; overflow-x:auto; margin:1.5rem 0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:0.85rem; line-height:1.5; color:#ddd; }
+.net-diagram .box { border:1px solid #555; border-radius:6px; padding:0.5rem 0.75rem; background:#2b2b2b; }
+.net-diagram .box-guest { border:1px dashed #777; background:#262626; }
+.net-diagram .box-iot { border:1px solid #6a8; background:#1f2b22; }
+.net-diagram .row { display:flex; gap:1rem; }
+.net-diagram .row > div { flex:1; }
+.net-diagram .conn { text-align:center; color:#888; margin:0.5rem 0; }
+.net-diagram .muted { color:#bbb; }
+@media (max-width:520px) {
+  .net-diagram .row { flex-direction:column; }
+}
+</style>
+
+<div class="net-diagram">
+
+  <div class="box" style="text-align:center;"><strong>INTERNET</strong></div>
+  <div class="conn">│</div>
+
+  <div class="box">
+    <strong>ISP Router: Calix Gigaspire (EXOS)</strong><br>
+    <span class="muted">DHCP: trusted OFF · guest ON</span>
+  </div>
+
+  <div class="row" style="margin-top:0.5rem;">
+    <div class="box">
+      <strong>TRUSTED Wi-Fi</strong> · 10.10.1.0/24<br>
+      <span class="muted">Trusted devices (laptop/phone)<br>+ Tailscale client</span>
+    </div>
+    <div class="box box-guest">
+      <strong>GUEST Wi-Fi</strong> (isolated) · 192.168.0.0/24<br>
+      <span class="muted">OpenWrt WAN side</span>
+    </div>
+  </div>
+
+  <div class="conn">│ (Tailscale tunnel → 172.16.1.0/24)</div>
+
+  <div class="box box-iot" style="margin-top:0.5rem;">
+    <strong>OpenWrt — IoT GW/AP + Tailscale subnet router</strong><br>
+    <span class="muted">WAN = 192.168.0.x (guest) · LAN = 172.16.1.1 (IoT Wi-Fi)<br>Tailscale advertises 172.16.1.0/24</span>
+  </div>
+
+  <div class="conn">│ IOT Wi-Fi SSID</div>
+
+  <div class="box">
+    <strong>IoT devices</strong> · 172.16.1.0/24
+  </div>
+
+</div>
+
+> On narrow screens the two side-by-side boxes (Trusted / Guest) stack vertically, and the whole
+> diagram scrolls horizontally if it still doesn't fit.
 
 Trusted devices join my Tailscale tailnet and get a route to `172.16.1.0/24` through the
 OpenWrt subnet router. IoT devices stay behind OpenWrt, which is on the isolated guest LAN.

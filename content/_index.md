@@ -2,22 +2,14 @@
 title: "Welcome"
 ---
 
-I'm **Vahid** — a senior backend engineer and AWS-certified solutions architect with
-18+ years building distributed systems. 
+Hi, I'm **Vahid** — a senior backend engineer and AWS-certified solutions architect who likes
+building distributed systems and taking them apart to see how they fail.
 
-This site is where I keep a few things: a short note about me, and the occasional write-up on the
-projects and problems I dig into — cloud cost engineering, Kubernetes, and the home-network
-security experiments I tinker with on weekends.
+This is my corner of the internet: a place to keep notes on the things I build and break. Expect
+occasional write-ups on cloud cost engineering, Kubernetes, and the home-network security
+experiments I tinker with on weekends.
 
-## About me
-
-- **Role:** Senior software engineer / Solutions architect (AWS-certified).
-- **Focus:** Distributed systems, cloud infrastructure, security, and performance.
-- **Experience:** 18+ years across backend platforms and large-scale systems.
-- **Location:** Vancouver, BC.
-- **Beyond work:** I read fantasy and mystery novels, poke at modern history and philosophy, and
-  I'm into poetry. The engineering side of me leaks into the hobby side — see the
-  [network architecture post](/posts/one-way-trusted-iot-network/) if you want proof.
+Want the longer version of who I am? Head over to the [About page](/about/).
 
 ## Recent posts
 
