@@ -1,0 +1,49 @@
+# Basic config
+baseURL = "https://vahid.dev"
+theme = "hugo-bearcub"
+copyright = "© 2024"
+defaultContentLanguage = "en"
+
+enableRobotsTXT = true
+
+[markup]
+  [markup.highlight]
+    lineNos = true
+    lineNumbersInTable = false
+    noClasses = false
+
+[languages]
+  [languages.en]
+    title = "Vahid"
+    languageName = "en-US"
+    LanguageCode = "en-US"
+    contentDir = "content"
+    [languages.en.params]
+      madeWith = "[VHAID.DEV](https://vahid.dev)"
+
+[params]
+  description = "Personal website of Vahid — Cloud Engineer. Thoughts on technology, projects, and the occasional poem."
+  favicon = "favicon.ico"
+  title = "Vahid"
+  dateFormat = "2006-01-02"
+  hideUntranslated = false
+  themeStyle = "original"
+  generateSocialCard = false   # needs Hugo extended; not required for this site
+
+  [params.author]
+    name = "Vahid"
+    email = "contact@vahid.dev"
+
+# Top navigation: Home / Blog / RSS  (Bear Cub reads .Site.Menus.main)
+[[menus.main]]
+  name = "Home"
+  url = "/"
+  weight = 1
+[[menus.main]]
+  name = "Blog"
+  url = "/posts/"
+  weight = 2
+[[menus.main]]
+  name = "RSS"
+  url = "/index.xml"
+  weight = 3
