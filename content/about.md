@@ -2,7 +2,7 @@
 title: "About"
 ---
 
-**Vahid** is a senior backend engineer and AWS-certified solutions architect with
+I'm **Vahid** — a senior software engineer and AWS-certified solutions architect with
 18+ years of experience building distributed systems.
 
 ## What I do
