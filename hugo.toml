@@ -7,6 +7,10 @@ defaultContentLanguage = "en"
 enableRobotsTXT = true
 
 [markup]
+  [markup.goldmark]
+    # Allow hand-written HTML blocks in content (e.g. the responsive network diagram)
+    [markup.goldmark.renderer]
+      unsafe = true
   [markup.highlight]
     lineNos = true
     lineNumbersInTable = false
