@@ -70,60 +70,41 @@ turned the OpenWrt IoT box into a **Tailscale subnet router** for `172.16.1.0/24
 
 ## The architecture that worked
 
-<style>
-.net-diagram { max-width:100%; overflow-x:auto; margin:1.5rem 0;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  font-size:0.85rem; line-height:1.5; color:#ddd; }
-.net-diagram .box { border:1px solid #555; border-radius:6px; padding:0.5rem 0.75rem; background:#2b2b2b; }
-.net-diagram .box-guest { border:1px dashed #777; background:#262626; }
-.net-diagram .box-iot { border:1px solid #6a8; background:#1f2b22; }
-.net-diagram .row { display:flex; gap:1rem; }
-.net-diagram .row > div { flex:1; }
-.net-diagram .conn { text-align:center; color:#888; margin:0.5rem 0; }
-.net-diagram .muted { color:#bbb; }
-@media (max-width:520px) {
-  .net-diagram .row { flex-direction:column; }
-}
-</style>
+```mermaid
+flowchart TB
+  INTERNET(("INTERNET"))
+  CALIX["ISP Router: Calix Gigaspire (EXOS)<br/>DHCP: trusted OFF · guest ON"]
+  INTERNET --- CALIX
+  TRUSTED["TRUSTED Wi-Fi · 10.10.1.0/24<br/>Trusted devices + Tailscale client"]
+  GUEST["GUEST Wi-Fi · 192.168.0.0/24 (isolated)<br/>OpenWrt WAN side"]
+  CALIX --- TRUSTED
+  CALIX --- GUEST
+  TUNNEL["Tailscale tunnel → 172.16.1.0/24"]
+  TRUSTED --- TUNNEL
+  OPENWRT["OpenWrt — IoT GW/AP + Tailscale subnet router<br/>WAN 192.168.0.x · LAN 172.16.1.1<br/>advertises 172.16.1.0/24"]
+  TUNNEL --- OPENWRT
+  IOT["IoT devices · 172.16.1.0/24"]
+  OPENWRT --- IOT
 
-<div class="net-diagram">
+  style INTERNET fill:#2b2b2b,stroke:#888,color:#eee
+  style CALIX fill:#2b2b2b,stroke:#555,color:#eee
+  style TRUSTED fill:#2b2b2b,stroke:#555,color:#eee
+  style GUEST fill:#262626,stroke:#777,stroke-dasharray:4 3,color:#ccc
+  style TUNNEL fill:#22303a,stroke:#4a7,color:#cde
+  style OPENWRT fill:#1f2b22,stroke:#6a8,color:#eee
+  style IOT fill:#2b2b2b,stroke:#555,color:#eee
+```
 
-  <div class="box" style="text-align:center;"><strong>INTERNET</strong></div>
-  <div class="conn">│</div>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+  document.addEventListener('DOMContentLoaded', () => {
+    mermaid.run({ querySelector: '.language-mermaid' });
+  });
+</script>
 
-  <div class="box">
-    <strong>ISP Router: Calix Gigaspire (EXOS)</strong><br>
-    <span class="muted">DHCP: trusted OFF · guest ON</span>
-  </div>
-
-  <div class="row" style="margin-top:0.5rem;">
-    <div class="box">
-      <strong>TRUSTED Wi-Fi</strong> · 10.10.1.0/24<br>
-      <span class="muted">Trusted devices (laptop/phone)<br>+ Tailscale client</span>
-    </div>
-    <div class="box box-guest">
-      <strong>GUEST Wi-Fi</strong> (isolated) · 192.168.0.0/24<br>
-      <span class="muted">OpenWrt WAN side</span>
-    </div>
-  </div>
-
-  <div class="conn">│ (Tailscale tunnel → 172.16.1.0/24)</div>
-
-  <div class="box box-iot" style="margin-top:0.5rem;">
-    <strong>OpenWrt — IoT GW/AP + Tailscale subnet router</strong><br>
-    <span class="muted">WAN = 192.168.0.x (guest) · LAN = 172.16.1.1 (IoT Wi-Fi)<br>Tailscale advertises 172.16.1.0/24</span>
-  </div>
-
-  <div class="conn">│ IOT Wi-Fi SSID</div>
-
-  <div class="box">
-    <strong>IoT devices</strong> · 172.16.1.0/24
-  </div>
-
-</div>
-
-> On narrow screens the two side-by-side boxes (Trusted / Guest) stack vertically, and the whole
-> diagram scrolls horizontally if it still doesn't fit.
+> The diagram is rendered with [Mermaid](https://mermaid.js.org/) and scales to fit any screen
+> (it's an SVG, so no horizontal overflow on mobile).
 
 Trusted devices join my Tailscale tailnet and get a route to `172.16.1.0/24` through the
 OpenWrt subnet router. IoT devices stay behind OpenWrt, which is on the isolated guest LAN.
