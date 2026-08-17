@@ -23,7 +23,7 @@ enableRobotsTXT = true
 
 [params]
   description = "Personal website of Vahid — Cloud Engineer. Thoughts on technology, projects, and the occasional poem."
-  favicon = "favicon.ico"
+  favicon = "favicon.svg"
   title = "Vahid"
   dateFormat = "2006-01-02"
   hideUntranslated = false
@@ -34,7 +34,7 @@ enableRobotsTXT = true
     name = "Vahid"
     email = "contact@vahid.dev"
 
-# Top navigation: Home / Blog / RSS  (Bear Cub reads .Site.Menus.main)
+# Top navigation: Home / Blog  (Bear Cub renders the RSS link itself in nav.html)
 [[menus.main]]
   name = "Home"
   url = "/"
@@ -43,7 +43,3 @@ enableRobotsTXT = true
   name = "Blog"
   url = "/posts/"
   weight = 2
-[[menus.main]]
-  name = "RSS"
-  url = "/index.xml"
-  weight = 3

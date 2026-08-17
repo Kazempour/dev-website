@@ -2,10 +2,26 @@
 title: "Welcome"
 ---
 
-I'm a Cloud Engineer with a passion for technology, poetry, and history. Welcome to my personal website where I share my thoughts, experiences, and projects.
+I'm **Vahid Kazempour** — a senior backend engineer and AWS-certified solutions architect with
+18+ years building distributed systems. I live in Vancouver, BC, and I work at **Axon**, where
+I help design and ship resilient, cloud-native services at scale.
 
-## About Me
+This site is where I keep a few things: a short note about me, and the occasional write-up on the
+projects and problems I dig into — cloud cost engineering, Kubernetes, and the home-network
+security experiments I tinker with on weekends.
 
-I'm a Cloud Engineer with a diverse range of interests. I enjoy reading fantasy and mystery novels, exploring modern history, and occasionally diving into philosophy. In my professional life, I focus on cloud infrastructure, security, and optimizing systems for better performance.
+## About me
 
-Feel free to reach out if you'd like to discuss technology, literature, or anything in between!
+- **Role:** Senior backend engineer / Solutions architect (AWS-certified).
+- **Focus:** Distributed systems, cloud infrastructure, security, and performance.
+- **Experience:** 18+ years across backend platforms and large-scale systems.
+- **Location:** Vancouver, BC.
+- **Beyond work:** I read fantasy and mystery novels, poke at modern history and philosophy, and
+  I'm into poetry. The engineering side of me leaks into the hobby side — see the
+  [network architecture post](/posts/one-way-trusted-iot-network/) if you want proof.
+
+## Recent posts
+
+- [Segmenting IoT from Trusted with Zero New Hardware](/posts/one-way-trusted-iot-network/) — a Tailscale + OpenWrt story.
+- [Understanding Kubernetes](/posts/understanding-kubernetes/) — a deep dive into Kubernetes and its components.
+- [Optimizing Cloud Costs](/posts/optimizing-cloud-costs/) — tips and tricks to save money on cloud infrastructure.
