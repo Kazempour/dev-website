@@ -1,12 +1,14 @@
 ---
 title: "Incus in my home lab: why I dropped Proxmox (and then clustering)"
-date: 2026-08-18
+date: 2026-08-19
 description: "A year of running Incus for LXC containers and VMs across amd64 and arm64 — what sold me, where clustering broke down, and what I'd tell myself starting out."
 ---
 
 For most of my home-lab life the default answer was Proxmox. It's a great product. But over the
 last year I moved my containers and VMs to **Incus**, and I want to write down why — and the one
 place it didn't work out the way I hoped.
+
+![Incus home-lab: amd64 and arm64 hosts running containers](/images/incus-homelab-hero.png)
 
 ## What Incus actually is
 
@@ -50,21 +52,77 @@ I started with **Incus clustering** — join the nodes, get a unified view, live
 hosts. The clustering story is arguably nicer than Proxmox's Corosync-based one: no hard node limit,
 and it can auto-rebalance VMs off a busy node.
 
-But the promise of "one pool, move anything anywhere" falls apart at the architecture boundary.
-**Containers don't migrate cleanly between amd64 and arm64.** Incus will refuse a copy/move across
-architectures because the binaries inside the container are built for one ISA. I could move an
-arm64 container to another arm64 node, and an amd64 container to another amd64 node — but never
-across. Live VM migration has the same wall unless the guest images are multi-arch (they usually
-aren't).
+But the dream of "one pool, run anything anywhere" hits a wall at the architecture boundary. Here's
+the nuance, because it changed between Incus versions:
 
-So the cluster gave me a pretty unified console and VM mobility *within* an architecture, but the
-cross-arch flexibility I'd imagined wasn't real. After a while the cluster's operational overhead
-(keeping members healthy, certificate/trust wrangling) wasn't paying for itself given that
-constraint.
+- **Moving/copying** an instance across architectures *used* to be refused outright (Incus did an
+  architecture check on `incus copy`/`incus move`). That check was **removed in Incus 0.6** (early
+  2024), so today you *can* copy or move an arm64 container onto an amd64 host and vice versa.
+- **What you still can't do is run it there.** A container's binaries are built for one ISA; an
+  amd64 container won't start on an arm64 host (and the reverse). So the copy lands, but `incus
+  start` fails with an architecture mismatch. VMs are the same story under KVM — the guest OS must
+  target the host's architecture to actually boot, even though the *migration* of the VM succeeds.
+
+So clustering gave me a pretty unified console and the ability to *relocate* instances across arch
+(for storage/backup, or to start them later on a same-arch node), but it did **not** give me
+"execute anywhere regardless of CPU." After a while the cluster's operational overhead (keeping
+members healthy, certificate/trust wrangling, re-balancing that only helps VMs) wasn't paying for
+itself given that hard limit.
+
+> If you're on an older Incus and see `Error: Requested architecture isn't supported by this host`
+> on a copy, that's the pre-0.6 behaviour — upgrade, and the copy will succeed (just don't expect to
+> start it on the wrong arch).
+
+## OCI containers and living alongside Docker/Podman
+
+Two more things that sold me on Incus over Proxmox, both stemming from the fact that Incus is just a
+daemon on top of a normal distro rather than an OS you boot into.
+
+**It can run OCI images directly.** Since **Incus 6.3** you can register Docker Hub as an OCI remote
+and launch application containers natively:
+
+```bash
+incus remote add docker https://docker.io --protocol=oci
+incus launch docker:nginx my-nginx
+```
+
+No Docker engine required — Incus runs the image itself. That said, be clear-eyed about the
+recommendation: Incus's primary model is the **system container** (a long-lived, VM-like full OS),
+while OCI/Docker images are **application containers** (ephemeral, task-focused). The Incus team
+added OCI support, but they frame it as a secondary path, not the main event — and it's newer, so
+rough edges exist (GPU passthrough into OCI, local-image import, and the like are still maturing).
+For a throwaway `nginx` or a quick `hello-world` it's slick; for a stack of interdependent services
+I still reach for Docker Compose.
+
+**And it coexists with Docker/Podman on the same host.** Because `incusd` is just another service on
+the distro I already run, I can `apt install docker.io` or `podman` right next to it and run OCI
+containers as a *peer* of Incus — not nested inside it. That's the clean pattern: Incus owns the
+system containers and VMs, Docker/Podman owns the ephemeral app workloads, both sharing the host
+kernel through different means. What you want to avoid is running the Docker engine *inside* an
+unprivileged Incus container (nested containers need privilege + cgroup fiddling and can cause
+network isolation surprises). Keep them side by side on the host and they get along fine.
+
+```bash
+# On the Incus host, as a peer — not inside a container:
+apt install -y docker.io
+docker run -d -p 8080:80 nginx
+```
 
 ## What I run today: standalone, per architecture
 
 I dropped clustering and now run each host as a **standalone** Incus server. Split by architecture:
+
+```
+ amd64 host (incusd)          arm64 host (incusd)
+ ┌────────────────────┐       ┌────────────────────┐
+ │ VMs (x86 guests)   │       │ lightweight LXCs    │
+ │ heavier x86 svc    │       │ (DNS, Go services,  │
+ │                    │       │  homelab odds/ends) │
+ └─────────┬──────────┘       └─────────┬──────────┘
+           │ incusbr0                     │ incusbr0
+           │                              │
+        [ trusted LAN 10.10.1.0/24 ]──[ switch ]──[ router ]
+```
 
 - **amd64 host** — heavier services, VMs that need x86.
 - **arm64 host** — lightweight always-on LXC containers (DNS, small Go services, the homelab
@@ -86,7 +144,8 @@ as effective for a home lab.
 - **The Web UI is one command away** — don't suffer the CLI just because you assume Incus is
   headless.
 - **Think in architectures.** Pick an image tag per host (`/amd64`, `/arm64`) and decide where a
-  service lives up front; don't plan to migrate it across ISAs.
+  service lives up front. You *can* copy/move a container to a different-arch host (Incus 0.6+ dropped
+  that block), but you can't *start* it there — so plan workloads per ISA, not "migrate later."
 - **Snapshots and profiles are the real productivity win.** A good default profile (storage, the
   bridge, user SSH key) makes spinning up a useful container a one-liner, and `incus snapshot` has
   saved me more than once.
