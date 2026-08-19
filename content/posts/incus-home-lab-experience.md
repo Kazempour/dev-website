@@ -114,14 +114,14 @@ I dropped clustering and now run each host as a **standalone** Incus server. Spl
 
 {{< diagram >}}
  amd64 host (incusd)          arm64 host (incusd)
- ┌────────────────────┐       ┌────────────────────┐
+ ┌────────────────────┐       ┌─────────────────────┐
  │ VMs (x86 guests)   │       │ lightweight LXCs    │
  │ heavier x86 svc    │       │ (DNS, Go services,  │
  │                    │       │  homelab odds/ends) │
- └─────────┬──────────┘       └─────────┬──────────┘
+ └─────────┬──────────┘       └───────────┬─────────┘
            │ incusbr0                     │ incusbr0
            │                              │
-        [ trusted LAN 10.10.1.0/24 ]──[ switch ]──[ router ]
+         [     trusted LAN 10.10.1.0/24     ]──[ switch ]──[ router ]
 {{< /diagram >}}
 
 - **amd64 host** — heavier services, VMs that need x86.

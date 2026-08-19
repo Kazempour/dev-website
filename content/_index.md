@@ -13,4 +13,4 @@ Want the longer version of who I am? Head over to the [About page](/about/).
 
 ## Recent posts
 
-{{< recent-posts 5 >}}
+{{< recent-posts 3 >}}
