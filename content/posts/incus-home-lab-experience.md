@@ -112,7 +112,7 @@ docker run -d -p 8080:80 nginx
 
 I dropped clustering and now run each host as a **standalone** Incus server. Split by architecture:
 
-```
+{{< diagram >}}
  amd64 host (incusd)          arm64 host (incusd)
  ┌────────────────────┐       ┌────────────────────┐
  │ VMs (x86 guests)   │       │ lightweight LXCs    │
@@ -122,7 +122,7 @@ I dropped clustering and now run each host as a **standalone** Incus server. Spl
            │ incusbr0                     │ incusbr0
            │                              │
         [ trusted LAN 10.10.1.0/24 ]──[ switch ]──[ router ]
-```
+{{< /diagram >}}
 
 - **amd64 host** — heavier services, VMs that need x86.
 - **arm64 host** — lightweight always-on LXC containers (DNS, small Go services, the homelab
