@@ -9,8 +9,6 @@ join a Wi-Fi network **directly** — not through the host bridge, but with its 
 That means handing the container the actual Wi-Fi device. Here's the procedure that works for me,
 plus the caveats you should know before you do it.
 
-![USB Wi-Fi dongle passed through to an Incus container](/images/incus-wifi-hero.png)
-
 ## Why a physical device (and not a bridge)
 
 Incus normally connects containers through a virtual bridge (`incusbr0`) that gets NAT'd to the
@@ -18,7 +16,7 @@ host's network. That's perfect for wired/LAN access. But if you specifically nee
 associate with a Wi-Fi SSID as its own client, the container needs the real wireless interface —
 bridges don't do Wi-Fi client auth. So we pass the dongle through as a **physical** NIC.
 
-{{< diagram >}}
+```
  HOST                                    CONTAINER (privileged)
  ┌───────────────────────────┐          ┌───────────────────────────┐
  │ USB Wi-Fi dongle          │          │ wlan0  (nictype=physical) │
@@ -28,7 +26,7 @@ bridges don't do Wi-Fi client auth. So we pass the dongle through as a **physica
  └───────────────────────────┘          └─────────────┬─────────────┘
                                                      │
                                               [ Wi-Fi AP / router ]
-{{< /diagram >}}
+```
 
 > The dongle disappears from the host's network stack and appears inside the container as `wlan0`.
 > The host can't use that radio while it's passed through.

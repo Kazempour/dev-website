@@ -1,9 +1,0 @@
-{{- $count := 5 -}}
-{{- with .Get 0 }}{{ $count = . }}{{ end -}}
-{{- $pages := where site.RegularPages "Section" "posts" -}}
-{{- $pages = $pages | first $count -}}
-<ul>
-  {{- range $pages -}}
-  <li><a href="{{ .RelPermalink }}">{{ .Title }}</a> — {{ .Description }}</li>
-  {{- end -}}
-</ul>
