@@ -8,9 +8,7 @@ For most of my home-lab life the default answer was Proxmox. It's a great produc
 last year I moved my containers and VMs to **Incus**, and I want to write down why — and the one
 place it didn't work out the way I hoped.
 
-![Incus home-lab: amd64 and arm64 hosts running containers](/images/incus-homelab-hero.png)
-
-## What Incus actually is
+## Why Incus over Proxmox
 
 Incus is the successor to LXD, maintained by the original LXC team at Linux Containers. Same
 mental model: a single daemon (`incusd`) you talk to with a client (`incus`), managing both **system
@@ -112,7 +110,7 @@ docker run -d -p 8080:80 nginx
 
 I dropped clustering and now run each host as a **standalone** Incus server. Split by architecture:
 
-{{< diagram >}}
+```
  amd64 host (incusd)          arm64 host (incusd)
  ┌────────────────────┐       ┌─────────────────────┐
  │ VMs (x86 guests)   │       │ lightweight LXCs    │
@@ -122,7 +120,7 @@ I dropped clustering and now run each host as a **standalone** Incus server. Spl
            │ incusbr0                     │ incusbr0
            │                              │
          [     trusted LAN 10.10.1.0/24     ]──[ switch ]──[ router ]
-{{< /diagram >}}
+```
 
 - **amd64 host** — heavier services, VMs that need x86.
 - **arm64 host** — lightweight always-on LXC containers (DNS, small Go services, the homelab
