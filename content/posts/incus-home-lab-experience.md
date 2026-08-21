@@ -1,6 +1,6 @@
 ---
 title: "Incus in my home lab: why I dropped Proxmox (and then clustering)"
-date: 2026-08-19
+date: 2026-08-18
 description: "A year of running Incus for LXC containers and VMs across amd64 and arm64 — what sold me, where clustering broke down, and what I'd tell myself starting out."
 ---
 
