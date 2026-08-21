@@ -1,20 +1,21 @@
 ---
 title: "Passing a Wi-Fi dongle into an Incus LXC container"
 date: 2026-08-19
-description: "How to give a system container direct access to a physical Wi-Fi interface with Incus, and connect it to a network with wpa_supplicant."
+description: "Why and how to give a system container its own physical Wi-Fi radio in Incus, and what it costs you in isolation."
 ---
 
-I run a few Incus LXC containers on my home-lab hosts, and occasionally I want a container to
-join a Wi-Fi network **directly** — not through the host bridge, but with its own physical radio.
-That means handing the container the actual Wi-Fi device. Here's the procedure that works for me,
-plus the caveats you should know before you do it.
+Every now and then I want a container to be a real client on a Wi-Fi network, not just another
+thing hidden behind the host's bridge. That means the container needs the actual wireless device,
+not a virtual NIC with someone else's IP stacked on top. Incus can do this, but it's one of those
+jobs where the "how" is short and the "why it works this way" is the part worth understanding.
 
-## Why a physical device (and not a bridge)
+## Why a bridge won't do it
 
-Incus normally connects containers through a virtual bridge (`incusbr0`) that gets NAT'd to the
-host's network. That's perfect for wired/LAN access. But if you specifically need the container to
-associate with a Wi-Fi SSID as its own client, the container needs the real wireless interface —
-bridges don't do Wi-Fi client auth. So we pass the dongle through as a **physical** NIC.
+Incus puts containers behind a virtual bridge (usually `incusbr0`) that NATs them onto the host's
+network. Great for wired access. What it can't do is make the container *authenticate* to a Wi-Fi
+access point as its own client, because Wi-Fi association is a property of the radio itself. A
+bridge is layer 2 and 3; Wi-Fi client auth is layer 1 with a handshake. So if you want the container
+to show up on the AP as its own device, you hand it the physical dongle and let it do the talking.
 
 ```
  HOST                                    CONTAINER (privileged)
@@ -28,147 +29,77 @@ bridges don't do Wi-Fi client auth. So we pass the dongle through as a **physica
                                               [ Wi-Fi AP / router ]
 ```
 
-> The dongle disappears from the host's network stack and appears inside the container as `wlan0`.
-> The host can't use that radio while it's passed through.
+Once passed through, the dongle vanishes from the host's network stack and reappears inside the
+container as `wlan0`. The host can't use that radio while it's gone, which is exactly the point:
+the container owns it.
 
-## The security trade-off (read this first)
+## The trade-off you can't skip
 
-To attach a physical device, the container must be **privileged** (`security.privileged=true`).
-A privileged container shares the host's kernel namespaces far more loosely than the default
-unprivileged one, which weakens isolation. For a trusted home-lab workload on hardware you own,
-that's an acceptable risk — but don't do this for untrusted code. Incus runs **unprivileged by
-default** for good reason; flip it only when you have a concrete reason (like this).
+Attaching a physical device requires the container to run **privileged**
+(`security.privileged=true`). That loosens how much the container shares with the host's kernel
+namespaces, and it visibly weakens the isolation that makes unprivileged containers worth using in
+the first place. Incus runs unprivileged by default for a reason. I'm fine with this on a box I
+own, running workloads I trust. I would not do it for anything I didn't. If the code inside that
+container is untrusted, this is the wrong tool and you should stop here.
 
-## Part 1: Host configuration
+## What actually happens, step by step
 
-1. Plug the Wi-Fi USB dongle into the host.
+The mechanics are simple once you see the shape of it. Plug the dongle in, then find what the
+kernel called it:
 
-2. Find the interface name:
+```
+ip link show        # look for a wlan*/wl* entry that appeared when you plugged it in
+iw dev              # note the phy# (e.g. phy0) it's attached to
+```
 
-   ```
-   ip link show
-   ```
+The thing people get wrong is the next line. You attach the device with `nictype=physical`, and
+the `parent` is the **phy index** from `iw dev` (phy0, phy1, …), not the `wlan` name. Mix those up
+and the device simply never shows up in the container, which is the most common way this whole
+exercise fails:
 
-   Look for a `wlan*` / `wl*` entry that appeared when you plugged it in.
+```
+incus config set <container> security.privileged=true
+incus config device add <container> wlan0 nic nictype=physical parent=phy0 name=wlan0
+```
 
-3. Find the **physical device** the interface maps to (you'll need this for the passthrough):
+Inside, the device is a Wi-Fi radio, so I name it `wlan0` to match what `wpa_supplicant` expects
+rather than leaving it as a generic `eth0`.
 
-   ```
-   iw dev
-   ```
+There's a chicken-and-egg moment: before the dongle can authenticate, the container needs internet
+to install the supplicant tools. I borrow the host bridge just long enough to get them, then pull it
+back out:
 
-   Note the `phy#` (e.g. `phy0`) and the interface name it's attached to.
+```
+incus config device add <container> tempnet nic network=incusbr0
+incus exec <container> bash
+  dhclient eth0
+  apt update && apt install -y wpasupplicant wireless-tools iw
+incus config device remove <container> tempnet
+```
 
-4. Make the container privileged:
+Then it's just standard Wi-Fi from inside. Write the network config, bring the supplicant up on the
+passed-through interface, and ask the router for a lease:
 
-   ```
-   incus config set <container_name> security.privileged=true
-   ```
+```
+wpa_passphrase "Your_WiFi_Name" "Your_WiFi_Password" > /etc/wpa_supplicant/wpa_supplicant.conf
+wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+ip addr flush dev wlan0
+dhclient -v wlan0
+iw dev wlan0 link      # confirm you're associated
+```
 
-5. Attach the physical device to the container. Replace `phy0` with your actual `phy` index and
-   `wlan0` with the host interface name:
+Moving to another network later is the same dance with a fresh `wpa_passphrase` and a
+`pkill wpa_supplicant` before you restart it.
 
-   ```
-   incus config device add <container_name> wlan0 nic nictype=physical parent=phy0 name=wlan0
-   ```
+## Things that will bite you
 
-   > The original notes used `parent=phy0 name=eth0`, but inside the container the device is a
-   > Wi-Fi radio, not Ethernet — I name it `wlan0` to match what `wpa_supplicant` expects.
+- `parent=` is the **phy** index, not the interface name. This is the number one reason the device
+  "doesn't appear" in the container.
+- A privileged container holding a physical device is, for that radio, effectively standing on the
+  host's side of the network. Keep it on networks you trust.
+- None of this survives a host reboot on its own. After a restart you re-run the supplicant steps,
+  or you wire them into the container's own init if you want it to come back automatically.
 
-## Part 2: Get the container online once (temporary)
-
-Before the dongle can authenticate to Wi-Fi, the container needs *some* internet to install the
-supplicant tools. Borrow the host bridge temporarily:
-
-1. Add a temporary bridge interface:
-
-   ```
-   incus config device add <container_name> tempnet nic network=incusbr0
-   ```
-
-2. Shell in:
-
-   ```
-   incus exec <container_name> bash
-   ```
-
-3. Pull an address on the temp interface (usually `eth0`):
-
-   ```
-   dhclient eth0
-   ```
-
-4. Install the Wi-Fi tools:
-
-   ```
-   apt update && apt install -y wpasupplicant wireless-tools iw
-   ```
-
-5. Exit, then remove the temporary bridge from the host:
-
-   ```
-   incus config device remove <container_name> tempnet
-   ```
-
-   (Reference: the [Linux Containers forum thread](https://discuss.linuxcontainers.org/t/lxc-container-on-same-network-as-host-with-internet-access/12038) on container networking.)
-
-## Part 3: Connect to Wi-Fi
-
-Shell back in and drive the dongle directly:
-
-1. Generate the supplicant config (quote the SSID and password):
-
-   ```
-   wpa_passphrase "Your_WiFi_Name" "Your_WiFi_Password" > /etc/wpa_supplicant/wpa_supplicant.conf
-   ```
-
-2. Start `wpa_supplicant` on the passed-through interface in the background:
-
-   ```
-   wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
-   ```
-
-3. Clear any stale addresses and request a DHCP lease from your router:
-
-   ```
-   ip addr flush dev wlan0
-   dhclient -v wlan0
-   ```
-
-4. Confirm you're associated:
-
-   ```
-   iw dev wlan0 link
-   ```
-
-## Part 4: Switching to another network
-
-1. Regenerate the config for the new SSID:
-
-   ```
-   wpa_passphrase "New_WiFi_Name" "New_WiFi_Password" > /etc/wpa_supplicant/wpa_supplicant.conf
-   ```
-
-2. Stop and restart the supplicant:
-
-   ```
-   pkill wpa_supplicant
-   wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
-   ```
-
-3. Re-lease the address:
-
-   ```
-   ip addr flush dev wlan0
-   dhclient -r wlan0
-   dhclient -v wlan0
-   ```
-
-## Gotchas
-
-- The `parent=` value is the **phy** index from `iw dev` (`phy0`, `phy1`, …), not the `wlan`
-  interface name. Getting this wrong is the #1 reason the device "doesn't appear" in the container.
-- A privileged container with a physical device is effectively on the host's side for that radio.
-  Keep it on trusted networks only.
-- After a host reboot, re-run Part 3 (or wire it into the container's own init) — this setup isn't
-  persistent across reboots by itself.
+It's a small amount of config for a genuinely useful capability: a container that is a first-class
+Wi-Fi citizen instead of a guest behind the host. Just remember you paid for it with isolation, and
+spend that privilege where it's actually safe.
