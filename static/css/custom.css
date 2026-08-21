@@ -1,0 +1,25 @@
+/* Custom styles for vahid.dev (loaded via custom_head.html partial) */
+
+/* ASCII diagrams: render as plain monospace, bypassing the syntax highlighter so
+   box-drawing characters (┌ ─ ┐ │ └ ┘) stay aligned. */
+.ascii-diagram {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.85em;
+  line-height: 1.25;
+  white-space: pre;
+  overflow-x: auto;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #313244;
+}
+
+/* Nicer code-block frames (chroma/dracula highlighting already active). */
+pre.chroma,
+pre {
+  border-radius: 8px;
+  border: 1px solid #313244;
+  padding: 1rem;
+  overflow-x: auto;
+}
