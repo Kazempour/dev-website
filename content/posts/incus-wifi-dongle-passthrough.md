@@ -21,12 +21,12 @@ to show up on the AP as its own device, you hand it the physical dongle and let 
  HOST                                    CONTAINER (privileged)
  ┌───────────────────────────┐          ┌───────────────────────────┐
  │ USB Wi-Fi dongle          │          │ wlan0  (nictype=physical) │
- │   phy0  ── passthrough ────┼─────────►│   wpa_supplicant           │
- │                           │          │   dhclient → AP            │
+ │   phy0  ── passthrough ───┼─────────►│   wpa_supplicant          │
+ │                           │          │   dhclient → AP           │
  │ (no host Wi-Fi client)    │          │                           │
- └───────────────────────────┘          └─────────────┬─────────────┘
+ └───────────────────────────┘          └────────────┬──────────────┘
                                                      │
-                                              [ Wi-Fi AP / router ]
+                                            [ Wi-Fi AP / router ]
 ```
 
 Once passed through, the dongle vanishes from the host's network stack and reappears inside the
