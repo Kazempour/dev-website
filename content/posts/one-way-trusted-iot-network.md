@@ -84,7 +84,7 @@ subnet router for `172.16.1.0/24`.
                   │ (Tailscale tunnel)  │
                   │  to 172.16.1.0/24   │
                   ▼                     │
-          ┌─────────────────────────────┴──────────┐
+          ┌─────────────────────────────┴───────────┐
           │ OpenWrt (IoT GW/AP + Tailscale subnet   │
           │          router)                        │
           │  WAN  = 192.168.0.x  (guest side)       │
